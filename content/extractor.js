@@ -159,7 +159,16 @@
         }
 
         case "pre": {
-          const codeEl = node.querySelector("code");
+          // Prefer a <code> with a language-* class; fall back to last <code>.
+          const codes = node.querySelectorAll("code");
+          let codeEl = null;
+          for (const c of codes) {
+            if (/(?:^|\s)(?:language-|hljs\s+language-|!whitespace)/i.test(c.className) ||
+                c.closest("pre") === node && (c.textContent || "").length > 20) {
+              codeEl = c;
+            }
+          }
+          if (!codeEl && codes.length) codeEl = codes[codes.length - 1];
           let lang = "";
           if (codeEl) {
             const cls = codeEl.className || "";
@@ -171,24 +180,24 @@
             const header = node.querySelector("div");
             if (header) {
               const headerText = header.textContent.trim().split("\n")[0].trim();
-              if (headerText && headerText.length < 20 && /^[\w+-]+$/.test(headerText)) {
-                lang = headerText.toLowerCase();
+              if (headerText && headerText.length < 20 && /^[\w+#.+-]+$/.test(headerText)) {
+                lang = headerText.toLowerCase().replace(/\+\+/g, "pp");
               }
             }
           }
-          const codeText = codeEl ? codeEl.textContent : node.textContent;
-          out.push(`\n\n\`\`\`${lang}\n${codeText.replace(/\n$/, "")}\n\`\`\`\n\n`);
+          const codeText = extractCodeText(codeEl || node);
+          out.push(`\n\n\`\`\`${lang}\n${codeText.replace(/\n+$/, "")}\n\`\`\`\n\n`);
           break;
         }
 
         case "ul": {
-          out.push("\n");
-          const childCtx = { ...ctx, listDepth: ctx.listDepth + 1, listType: "ul" };
+          out.push("\n\n");
+          const childDepth = ctx.listDepth + 1;
+          const indent = "  ".repeat(childDepth - 1);
           for (const child of node.children) {
             if (child.tagName.toLowerCase() === "li") {
-              out.push("  ".repeat(childCtx.listDepth - 1) + "- ");
-              walkChildren(child, childCtx);
-              out.push("\n");
+              const itemMd = renderListItem(child, childDepth);
+              out.push(indent + "- " + itemMd + "\n");
             }
           }
           out.push("\n");
@@ -196,14 +205,14 @@
         }
 
         case "ol": {
-          out.push("\n");
-          const childCtx = { ...ctx, listDepth: ctx.listDepth + 1, listType: "ol" };
+          out.push("\n\n");
+          const childDepth = ctx.listDepth + 1;
+          const indent = "  ".repeat(childDepth - 1);
           let i = 1;
           for (const child of node.children) {
             if (child.tagName.toLowerCase() === "li") {
-              out.push("  ".repeat(childCtx.listDepth - 1) + `${i}. `);
-              walkChildren(child, childCtx);
-              out.push("\n");
+              const itemMd = renderListItem(child, childDepth);
+              out.push(indent + `${i}. ` + itemMd + "\n");
               i++;
             }
           }
@@ -212,6 +221,7 @@
         }
 
         case "li":
+          // Handled by parent ul/ol; if we hit an orphan li, walk normally
           walkChildren(node, ctx);
           break;
 
@@ -280,9 +290,79 @@
       for (const child of node.childNodes) walk(child, ctx);
     }
 
+    /**
+     * Render a single <li>'s content into a single-string, trimmed Markdown
+     * fragment. Continuation lines are indented so they stay inside the item.
+     */
+    function renderListItem(liNode, depth) {
+      // Render children into a temporary buffer
+      const savedOut = out.slice();
+      out.length = 0;
+      const childCtx = { listDepth: depth, listType: null, listIndex: 0 };
+      for (const child of liNode.childNodes) walk(child, childCtx);
+      let itemText = out.join("");
+      out.length = 0;
+      out.push(...savedOut);
+
+      // Trim leading/trailing whitespace and collapse double-newlines inside
+      // simple items so the marker sits on the same line as the content.
+      itemText = itemText.replace(/^[\s\n]+|[\s\n]+$/g, "");
+
+      // If the item contains block content (code, sub-list, multiple paras),
+      // preserve internal newlines but indent continuation lines.
+      const hasBlock = /\n{2,}/.test(itemText) || /```/.test(itemText) || /^\s{2,}[-*+]\s/m.test(itemText);
+      if (hasBlock) {
+        const indent = "  ".repeat(depth);
+        const [first, ...rest] = itemText.split("\n");
+        return first + (rest.length ? "\n" + rest.map((l) => (l ? indent + l : l)).join("\n") : "");
+      }
+      // Simple item: fold any internal newlines into spaces
+      return itemText.replace(/\s*\n\s*/g, " ");
+    }
+
+    /**
+     * Extract code text from a <code> (or <pre>) element while correctly
+     * handling ChatGPT's syntax-highlighted markup where each line lives in
+     * a <span class="line"> / <span class="token-line"> with display:block
+     * (no literal \n between spans).
+     */
+    function extractCodeText(el) {
+      if (!el) return "";
+
+      // Strategy 1: if the element has literal newline characters, use
+      // textContent directly — this is the simple case.
+      const raw = el.textContent || "";
+      if (raw.includes("\n")) return raw;
+
+      // Strategy 2: ChatGPT's highlighter uses per-line spans. Walk children
+      // and insert \n between block-level or class="line"-style spans.
+      const lineSelectors = [
+        ":scope > span.line",
+        ":scope > span.token-line",
+        ":scope > div.line",
+        ":scope > span[class*='line']",
+      ];
+      for (const sel of lineSelectors) {
+        const lineNodes = el.querySelectorAll(sel);
+        if (lineNodes.length > 1) {
+          return [...lineNodes].map((n) => n.textContent.replace(/\n$/, "")).join("\n");
+        }
+      }
+
+      // Strategy 3: use innerText if available — the browser computes it from
+      // rendered CSS, so display:block spans give us real line breaks.
+      if (typeof el.innerText === "string" && el.innerText.includes("\n")) {
+        return el.innerText;
+      }
+
+      // Fallback
+      return raw;
+    }
+
     walk(root);
     return out
       .join("")
+      .replace(/[ \t]+\n/g, "\n")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
   }
