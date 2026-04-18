@@ -85,7 +85,7 @@ async function detectChatGptTab() {
     try {
       await chrome.scripting.executeScript({
         target: { tabId: state.tabId },
-        files: ["content/extractor.js"],
+        files: ["content/chatgpt-api.js", "content/extractor.js"],
       });
       setStatus("ok", "ChatGPT detected · Ready");
       els.exportBtn.disabled = false;
@@ -106,7 +106,7 @@ async function detectChatGptTab() {
 async function extract() {
   const response = await chrome.tabs.sendMessage(state.tabId, { type: "CHATSCRIBE_EXTRACT" });
   if (!response?.ok) throw new Error(response?.error || "Extraction failed");
-  return response.data;
+  return { data: response.data, source: response.source };
 }
 
 async function downloadBlob(blob, filename) {
@@ -145,7 +145,7 @@ els.exportBtn.addEventListener("click", async () => {
   setMessage("Extracting conversation…");
 
   try {
-    const data = await extract();
+    const { data, source } = await extract();
     if (!data.messages || data.messages.length === 0) {
       throw new Error("No messages found on this page");
     }
@@ -156,12 +156,13 @@ els.exportBtn.addEventListener("click", async () => {
     }
 
     setMessage("Building document…");
+    const sourceLabel = source === "api" ? "" : " (DOM mode)";
     if (state.format === "md") {
       await exportMarkdown(data);
-      setMessage(`Exported ${data.messages.length} messages to Markdown`, "success");
+      setMessage(`Exported ${data.messages.length} messages to Markdown${sourceLabel}`, "success");
     } else {
       await exportPdf(data);
-      setMessage("PDF preview opened — use the print dialog to save", "success");
+      setMessage(`PDF preview opened${sourceLabel} — use print dialog to save`, "success");
     }
   } catch (err) {
     setMessage(`Error: ${err.message || err}`, "error");

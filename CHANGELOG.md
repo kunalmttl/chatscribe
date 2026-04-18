@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.2.0 — 2026-04-18
+
+### Changed
+- **Switched from DOM extraction to ChatGPT's backend API.** ChatScribe now
+  calls `/backend-api/conversation/<id>` directly (authenticated with the
+  bearer token from `/api/auth/session`) to fetch the original conversation
+  as raw Markdown strings. This is how we always should have done it.
+
+### Fixed
+- **Code block newlines — for real this time.** The DOM approach fundamentally
+  can't recover newlines reliably because ChatGPT's syntax highlighter uses
+  `<span class="line">` blocks with no literal `\n` characters, and
+  `innerText` behaves inconsistently in content-script isolated worlds. By
+  reading the original markdown from ChatGPT's database, every `\n` is
+  preserved perfectly.
+- Also fixes subtle formatting drift in lists, tables, and nested
+  blockquotes that were being reconstructed from styled HTML.
+
+### Added
+- `content/chatgpt-api.js` — backend API client that walks the conversation
+  tree from `current_node` up the parent chain, merges consecutive assistant
+  continuations, and handles `text`, `code`, `execution_output`, and
+  `multimodal_text` content types.
+- Graceful fallback: if the API call fails (e.g. on `/share/<id>` pages,
+  when logged out, or if OpenAI changes the endpoint), the old DOM extractor
+  runs automatically. The popup shows a `(DOM mode)` suffix when this
+  happens so you know what's going on.
+
 ## 0.1.1 — 2026-04-18
 
 ### Fixed

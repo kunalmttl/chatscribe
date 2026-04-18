@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ChatScribe — ChatGPT Exporter",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Export ChatGPT conversations to beautifully formatted Markdown or PDF. Minimal. Dark. Copy-pasteable.",
   "permissions": ["activeTab", "downloads", "scripting", "storage"],
   "host_permissions": [
@@ -31,7 +31,7 @@
   "content_scripts": [
     {
       "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
-      "js": ["content/extractor.js"],
+      "js": ["content/chatgpt-api.js", "content/extractor.js"],
       "run_at": "document_idle"
     }
   ],

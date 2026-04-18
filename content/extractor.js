@@ -405,6 +405,21 @@
 
     if (msg?.type === "CHATSCRIBE_EXTRACT") {
       (async () => {
+        // Strategy 1: ChatGPT backend API — cleanest, preserves code newlines
+        // perfectly because we're reading the original markdown, not the DOM.
+        try {
+          if (window.__chatscribeApi?.available?.()) {
+            const data = await window.__chatscribeApi.extract();
+            if (data?.messages?.length) {
+              sendResponse({ ok: true, data, source: "api" });
+              return;
+            }
+          }
+        } catch (apiErr) {
+          console.warn("[ChatScribe] API extraction failed, falling back to DOM:", apiErr);
+        }
+
+        // Strategy 2: DOM extraction fallback
         try {
           await autoScrollToTop();
           await sleep(300);
@@ -412,6 +427,7 @@
           const title = getChatTitle();
           sendResponse({
             ok: true,
+            source: "dom",
             data: {
               title,
               url: location.href,
