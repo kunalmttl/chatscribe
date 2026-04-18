@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ChatScribe</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h12l4 4v12a0 0 0 0 1 0 0H4z"/>
+          <path d="M14 4v4h4"/>
+          <path d="M8 12h8"/>
+          <path d="M8 16h6"/>
+        </svg>
+        <span class="wordmark">ChatScribe</span>
+      </div>
+      <span class="version">v0.1</span>
+    </header>
+
+    <div id="status" class="status status--checking">
+      <span class="status-dot"></span>
+      <span class="status-text">Checking page…</span>
+    </div>
+
+    <section class="section">
+      <label class="section-label">Format</label>
+      <div class="segmented" role="tablist">
+        <button class="seg-btn active" data-format="pdf" role="tab">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          PDF
+        </button>
+        <button class="seg-btn" data-format="md" role="tab">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 16V8l3 4 3-4v8"/><path d="M18 10v6"/><path d="M16 14l2 2 2-2"/></svg>
+          Markdown
+        </button>
+      </div>
+    </section>
+
+    <section class="section">
+      <label class="section-label">Filename</label>
+      <input type="text" id="filename" class="input" placeholder="chat-export" spellcheck="false">
+    </section>
+
+    <section class="section options">
+      <label class="check">
+        <input type="checkbox" id="opt-meta" checked>
+        <span class="check-box"></span>
+        <span class="check-text">Include export metadata</span>
+      </label>
+      <label class="check pdf-only">
+        <input type="checkbox" id="opt-dark" checked>
+        <span class="check-box"></span>
+        <span class="check-text">Dark theme (PDF)</span>
+      </label>
+    </section>
+
+    <button id="export-btn" class="btn-primary" disabled>
+      <span class="btn-label">Export</span>
+      <span class="btn-spinner" aria-hidden="true"></span>
+    </button>
+
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+
+    <footer class="footer">
+      <span class="hint">Open a ChatGPT chat, then export.</span>
+    </footer>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
