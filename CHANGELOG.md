@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.2.0 — 2026-04-18
+## 0.2.1 — 2026-04-19
+
+### Fixed
+- **Toolbar buttons in PDF preview now functional.** Added proper click
+  handlers to the "Save as PDF" and "Close" buttons in the generated PDF
+  preview toolbar. The toolbar is properly hidden in print output via
+  `@media print` rules.
 
 ### Changed
 - **Switched from DOM extraction to ChatGPT's backend API.** ChatScribe now

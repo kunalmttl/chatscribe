@@ -5,7 +5,7 @@ or a significant architectural change lands. Read `context.md` first for the
 *why*; this document is the *what*.
 
 **Last updated:** 2026-04-19
-**Current version:** 0.2.0 (+ two patch fixes on `main`)
+**Current version:** 0.2.1
 **Repo:** https://github.com/kunalmttl/chatscribe
 **License:** MIT
 
@@ -19,8 +19,7 @@ or a significant architectural change lands. Read `context.md` first for the
 - ✅ DOM-based fallback extractor
 - ✅ Dark, flat popup UI
 - ✅ Code fence handling (including ChatGPT's `id="..."` info strings)
-- ⏳ Toolbar buttons in generated PDF preview tab (not yet wired up —
-  plan documented, not implemented)
+- ✅ Toolbar buttons in generated PDF preview tab (wired up — Save as PDF and Close functional)
 - ⏳ Automated tests (none — manual testing only)
 
 ## File map
