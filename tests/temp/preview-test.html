@@ -1,113 +1,25 @@
-/**
- * ChatScribe — PDF Template
- * Produces a self-contained HTML document styled for print-to-PDF.
- * Dark mode, flat palette, minimal, copy-pasteable.
- */
-
-import { mdToHtml } from "./md-to-html.js";
-
-// Flat dark palette — easy on eyes, prints cleanly
-const THEME = {
-  light: {
-    bg: "#fafaf9",
-    surface: "#ffffff",
-    border: "#e7e5e4",
-    text: "#1c1917",
-    muted: "#78716c",
-    accent: "#0ea5e9",
-    codeBg: "#f5f5f4",
-    codeBorder: "#e7e5e4",
-    codeText: "#1c1917",
-    userTag: "#0ea5e9",
-    aiTag: "#14b8a6",
-    divider: "#e7e5e4",
-  },
-  dark: {
-    bg: "#0f0f10",
-    surface: "#17171a",
-    border: "#27272a",
-    text: "#e4e4e7",
-    muted: "#71717a",
-    accent: "#38bdf8",
-    codeBg: "#141416",
-    codeBorder: "#27272a",
-    codeText: "#e4e4e7",
-    userTag: "#38bdf8",
-    aiTag: "#2dd4bf",
-    divider: "#27272a",
-  },
-};
-
-function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-export function buildPdfHtml(data, options = {}) {
-  const { title, url, exportedAt, messages } = data;
-  const {
-    theme = "dark",
-    includeMeta = true,
-    fontBody = "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
-    fontMono = "'JetBrains Mono', 'SF Mono', 'Menlo', 'Consolas', monospace",
-  } = options;
-
-  const c = THEME[theme] || THEME.dark;
-
-  const date = new Date(exportedAt);
-  const formattedDate = date.toLocaleString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  const messageHtml = messages
-    .map((m) => {
-      const isUser = m.role === "user";
-      const label = isUser ? "You" : "ChatGPT";
-      const tagClass = isUser ? "tag-user" : "tag-ai";
-      const body = mdToHtml(m.markdown);
-      return `
-        <section class="message ${isUser ? "msg-user" : "msg-ai"}">
-          <div class="msg-header">
-            <span class="tag ${tagClass}">${label}</span>
-          </div>
-          <div class="msg-body">
-            ${body}
-          </div>
-        </section>
-      `;
-    })
-    .join("\n");
-
-  return `<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>${escapeHtml(title)}</title>
+<title>Test Conversation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: ${c.bg};
-    --surface: ${c.surface};
-    --border: ${c.border};
-    --text: ${c.text};
-    --muted: ${c.muted};
-    --accent: ${c.accent};
-    --code-bg: ${c.codeBg};
-    --code-border: ${c.codeBorder};
-    --code-text: ${c.codeText};
-    --user-tag: ${c.userTag};
-    --ai-tag: ${c.aiTag};
-    --divider: ${c.divider};
+    --bg: #0f0f10;
+    --surface: #17171a;
+    --border: #27272a;
+    --text: #e4e4e7;
+    --muted: #71717a;
+    --accent: #38bdf8;
+    --code-bg: #141416;
+    --code-border: #27272a;
+    --code-text: #e4e4e7;
+    --user-tag: #38bdf8;
+    --ai-tag: #2dd4bf;
+    --divider: #27272a;
   }
 
   * { box-sizing: border-box; }
@@ -117,7 +29,7 @@ export function buildPdfHtml(data, options = {}) {
     padding: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: ${fontBody};
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     font-size: 11pt;
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
@@ -238,7 +150,7 @@ export function buildPdfHtml(data, options = {}) {
 
   /* Inline code */
   code {
-    font-family: ${fontMono};
+    font-family: 'JetBrains Mono', 'SF Mono', 'Menlo', 'Consolas', monospace;
     font-size: 0.9em;
     background: var(--code-bg);
     border: 1px solid var(--code-border);
@@ -276,7 +188,7 @@ export function buildPdfHtml(data, options = {}) {
     position: absolute;
     top: 6px;
     right: 10px;
-    font-family: ${fontMono};
+    font-family: 'JetBrains Mono', 'SF Mono', 'Menlo', 'Consolas', monospace;
     font-size: 7.5pt;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -387,22 +299,107 @@ export function buildPdfHtml(data, options = {}) {
   <main class="page">
     <header class="doc-header">
       <div class="brand">ChatScribe</div>
-      <h1 class="doc-title">${escapeHtml(title)}</h1>
-      ${
-        includeMeta
-          ? `<div class="doc-meta">
-              <span class="meta-item">Exported ${escapeHtml(formattedDate)}</span>
-              <span class="meta-item">${messages.length} messages</span>
-            </div>`
-          : ""
-      }
+      <h1 class="doc-title">Test Conversation</h1>
+      <div class="doc-meta">
+              <span class="meta-item">Exported 20 April 2026 at 03:13 pm</span>
+              <span class="meta-item">4 messages</span>
+            </div>
     </header>
 
-    ${messageHtml}
+    
+        <section class="message msg-user">
+          <div class="msg-header">
+            <span class="tag tag-user">You</span>
+          </div>
+          <div class="msg-body">
+            <p>Hello world</p>
+          </div>
+        </section>
+      
+
+        <section class="message msg-ai">
+          <div class="msg-header">
+            <span class="tag tag-ai">ChatGPT</span>
+          </div>
+          <div class="msg-body">
+            <p>A very long message to test page breaking.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+<p>Line of text.</p>
+          </div>
+        </section>
+      
+
+        <section class="message msg-user">
+          <div class="msg-header">
+            <span class="tag tag-user">You</span>
+          </div>
+          <div class="msg-body">
+            <p>Show me a big table</p>
+          </div>
+        </section>
+      
+
+        <section class="message msg-ai">
+          <div class="msg-header">
+            <span class="tag tag-ai">ChatGPT</span>
+          </div>
+          <div class="msg-body">
+            <table><thead><tr><th>ID</th><th>Data</th><th>Description</th></tr></thead><tbody><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr><tr><td>1</td><td>Row</td><td>Long description that might wrap</td></tr></tbody></table>
+          </div>
+        </section>
+      
 
     <footer class="doc-footer">
       <span>Generated with ChatScribe</span>
-      <span>${escapeHtml(formattedDate)}</span>
+      <span>20 April 2026 at 03:13 pm</span>
     </footer>
   </main>
    <script>
@@ -436,5 +433,4 @@ export function buildPdfHtml(data, options = {}) {
      });
    </script>
  </body>
-</html>`;
-}
+</html>

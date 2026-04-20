@@ -1,4 +1,13 @@
 # Changelog
+61: 
+## 0.2.2 — 2026-04-20
+
+### Added
+- **Automated test suite.** Introduced a comprehensive `node:test` suite for core logic
+  (markdown-to-HTML, filename building, metadata) and a UI verification script
+  that generates a preview tab to audit the recently added toolbar functionality.
+- `package.json` for managing test scripts and package configuration.
+
 
 ## 0.2.1 — 2026-04-19
 

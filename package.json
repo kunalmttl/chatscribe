@@ -1,0 +1,12 @@
+{
+  "name": "chatscribe",
+  "version": "0.2.1",
+  "description": "Chrome extension to capture and export LLM chats as Markdown or PDF.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/unit/*.test.js",
+    "test:ui": "node tests/ui/verify-pdf-ui.js"
+  },
+  "author": "Kunal",
+  "license": "MIT"
+}

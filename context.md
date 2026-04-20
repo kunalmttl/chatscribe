@@ -91,6 +91,15 @@ markdown string:
 
 Keeping a single source of truth means fixes apply uniformly.
 
+### Automated testing (v0.2.2)
+
+To ensure the hand-written converter (`md-to-html.js`) stays reliable as
+we handle more edge cases (like ChatGPT's info strings or nested lists),
+we use a zero-dependency `node:test` suite. This allows us to verify
+recursive rendering and HTML escaping without needing a full browser
+environment. UI-critical components (like the PDF toolbar) are verified
+via a generation script that produces an audit artifact.
+
 ## Non-goals
 
 - **Not a ChatGPT client.** We don't send messages, manage history, or
@@ -116,5 +125,12 @@ Keeping a single source of truth means fixes apply uniformly.
 - **Same-origin for API calls.** `fetch('/api/auth/session')` and
   `fetch('/backend-api/conversation/...')` only work from a content script
   running on `chatgpt.com`. Don't move the API client into the background
+...
   worker — it would need host permissions and wouldn't carry cookies the
   same way.
+
+## Error Log
+
+- **2026-04-20**: Encountered `multi_replace_file_content` corruption in `lib/pdf-template.js` due to large/overlapping chunks. Fixed by full-file rewrite using `write_to_file`.
+- **2026-04-20**: Infinite page break loop (201 pages) and side cropping in PDF export. Root cause: `page-break-inside: avoid` on large containers and removal of padding in print mode. Fixed by removing `avoid` rules, killed flexbox in print, and added safety buffer padding.
+

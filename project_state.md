@@ -4,8 +4,8 @@ Snapshot of the current implementation. Update this whenever a release ships
 or a significant architectural change lands. Read `context.md` first for the
 *why*; this document is the *what*.
 
-**Last updated:** 2026-04-19
-**Current version:** 0.2.1
+**Last updated:** 2026-04-20
+**Current version:** 0.2.3
 **Repo:** https://github.com/kunalmttl/chatscribe
 **License:** MIT
 
@@ -19,8 +19,9 @@ or a significant architectural change lands. Read `context.md` first for the
 - ✅ DOM-based fallback extractor
 - ✅ Dark, flat popup UI
 - ✅ Code fence handling (including ChatGPT's `id="..."` info strings)
-- ✅ Toolbar buttons in generated PDF preview tab (wired up — Save as PDF and Close functional)
-- ⏳ Automated tests (none — manual testing only)
+- ✅ Toolbar buttons in generated PDF preview tab (Save as PDF and Close functional)
+- ✅ Automated tests (unit tests for md-to-html.js coverage)
+- ✅ PDF Layout Stability (Fix for 200-page loops and cropping)
 
 ## File map
 
@@ -47,14 +48,14 @@ chatscribe/
 │                              "(DOM mode)" when fallback was used
 ├── lib/
 │   ├── markdown.js            Builds final .md document from the
-│                              canonical conversation object
+│   │                          canonical conversation object
 │   ├── md-to-html.js          Zero-dep Markdown → HTML for PDF render.
 │   │                            Recent fixes:
 │   │                            - paragraph soft-break <br> escaping
 │   │                            - fence regex accepts `id="..."` info
 │   └── pdf-template.js        Wraps HTML in a dark minimal page with
 │                              Inter + JetBrains Mono; includes toolbar
-│                              with Print / Close buttons (currently inert)
+│                              with Print / Close buttons (functional)
 ├── icons/                     16, 32, 48, 128 px (generated via PIL)
 ├── README.md
 ├── CHANGELOG.md
@@ -105,25 +106,15 @@ as `.woff2` files inside the extension — no Google Fonts CDN calls.
 
 ## Known issues / next work
 
-1. **Toolbar buttons inert** in the generated preview tab. Plan:
-   give the two `<button>`s IDs, add a small inline `<script>` at end of
-   `pdf-template.js` that wires `window.print()` and `window.close()`,
-   hide the toolbar with `@media print { .toolbar { display: none } }`.
-   Bump to 0.2.1.
-
-2. **Streaming / very long conversations.** Currently we build the whole
+1. **Streaming / very long conversations.** Currently we build the whole
    markdown string in memory. Untested past ~500-message chats. Should
    be fine but could blow up on pathological cases.
 
-3. **Share pages (`/share/<id>`).** The API endpoint isn't available on
+2. **Share pages (`/share/<id>`).** The API endpoint isn't available on
    share URLs, so we always fall through to DOM mode there. Works, but
    carries the v0.1.x code-block limitations.
 
-4. **No automated tests.** All QA is manual — paste a chat URL, export,
-   inspect. Add at least a Node-based unit test for `md-to-html.js`
-   covering fences, lists, tables, and soft breaks.
-
-5. **Math rendering.** `$...$` and `$$...$$` pass through as literal
+3. **Math rendering.** `$...$` and `$$...$$` pass through as literal
    characters. If users ask, consider shipping KaTeX offline.
 
 ## Version history
@@ -133,11 +124,11 @@ as `.woff2` files inside the extension — no Google Fonts CDN calls.
 | 0.1.0   | 2026-04-18 | Initial release. DOM extractor, dark popup, PDF + MD |
 | 0.1.1   | 2026-04-18 | List rendering fix; partial code-block newline fix   |
 | 0.2.0   | 2026-04-18 | Switch to backend API for extraction                 |
-| 0.2.0+  | 2026-04-18 | Fix: literal `<br>` in PDF paragraphs (8013ec2)      |
-| 0.2.0+  | 2026-04-18 | Fix: recognize `id="..."` fence info strings (6fcba53) |
+| 0.2.1   | 2026-04-19 | Added Print/Close toolbar to PDF export preview      |
+| 0.2.2   | 2026-04-20 | Added `node:test` suite for md-to-html.js; verification |
+| 0.2.3   | 2026-04-20 | Fixed PDF page-break loops and cropping in print mode |
 
-A 0.2.1 release should bundle the two post-0.2.0 fixes plus the toolbar
-button wiring.
+A 0.3.0 release should bundle these reliability fixes for stable use.
 
 ## How to run locally
 
