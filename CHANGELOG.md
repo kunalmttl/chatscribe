@@ -1,5 +1,18 @@
 # Changelog
 61: 
+## 0.2.4 — 2026-04-20
+
+### Added
+- **C++ Syntax Highlighting.** Implemented a lightweight, zero-dependency 
+  syntax highlighter for C++ using a "Subdued Pastel" palette (Lavender keywords, 
+  Sage strings, Teal types). This ensures code snippets in PDF exports are 
+  beautifully color-coded without adding external bloat to the extension.
+
+### Fixed
+- **Windows PowerShell separator support in development scripts.** Fixed an issue 
+  where command chaining (`&&`) would fail on Windows systems; added compatibility 
+  for PowerShell/CMD execution environments.
+
 ## 0.2.3 — 2026-04-20
 
 ### Fixed

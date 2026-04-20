@@ -133,4 +133,4 @@ via a generation script that produces an audit artifact.
 
 - **2026-04-20**: Encountered `multi_replace_file_content` corruption in `lib/pdf-template.js` due to large/overlapping chunks. Fixed by full-file rewrite using `write_to_file`.
 - **2026-04-20**: Infinite page break loop (201 pages) and side cropping in PDF export. Root cause: `page-break-inside: avoid` on large containers and removal of padding in print mode. Fixed by removing `avoid` rules, killed flexbox in print, and added safety buffer padding.
-
+- **2026-04-20**: Windows PowerShell separator issue. Running `&&` in `run_command` (PowerShell) fails; must use `;` instead. Fixed in verification workflow.

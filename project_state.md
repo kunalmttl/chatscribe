@@ -5,7 +5,7 @@ or a significant architectural change lands. Read `context.md` first for the
 *why*; this document is the *what*.
 
 **Last updated:** 2026-04-20
-**Current version:** 0.2.3
+**Current version:** 0.2.4
 **Repo:** https://github.com/kunalmttl/chatscribe
 **License:** MIT
 
@@ -22,6 +22,8 @@ or a significant architectural change lands. Read `context.md` first for the
 - ✅ Toolbar buttons in generated PDF preview tab (Save as PDF and Close functional)
 - ✅ Automated tests (unit tests for md-to-html.js coverage)
 - ✅ PDF Layout Stability (Fix for 200-page loops and cropping)
+- ✅ C++ Syntax Highlighting (Subdued Pastel palette)
+
 
 ## File map
 
@@ -127,6 +129,8 @@ as `.woff2` files inside the extension — no Google Fonts CDN calls.
 | 0.2.1   | 2026-04-19 | Added Print/Close toolbar to PDF export preview      |
 | 0.2.2   | 2026-04-20 | Added `node:test` suite for md-to-html.js; verification |
 | 0.2.3   | 2026-04-20 | Fixed PDF page-break loops and cropping in print mode |
+| 0.2.4   | 2026-04-20 | Added Subdued Pastel C++ syntax highlighting to PDF export |
+
 
 A 0.3.0 release should bundle these reliability fixes for stable use.
 
@@ -146,3 +150,10 @@ A 0.3.0 release should bundle these reliability fixes for stable use.
 5. Commit with message `vX.Y.Z: <summary>`.
 6. Push to `main`.
 7. (Future) tag + GitHub release once we have a Chrome Web Store listing.
+
+### RECAP — 2026-04-20 16:30
+- Built:       C++ Syntax Highlighting for PDF exports.
+- Changed:     `md-to-html.js` (logic), `pdf-template.js` (CSS), `README.md` (docs).
+- Fixed:       Windows PowerShell command separator issue in tests.
+- Pending:     Language detection for other languages (Python, JS).
+- Left off at: `README.md` updated with v0.2.4 info.

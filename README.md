@@ -10,8 +10,10 @@ ChatScribe is a lightweight Chrome extension that turns any ChatGPT chat into a 
 - **PDF export** with a polished dark theme (flat palette, Inter + JetBrains Mono)
 - **Markdown export** — clean, portable, GitHub-friendly
 - **Selectable, copy-pasteable text** — including every code block
+- **Syntax Highlighting**: Subdued Pastel highlighting for C++ in PDF exports (zero-dependency)
 - **Preserves everything**: code blocks with language tags, tables, lists, math (KaTeX → LaTeX), inline formatting, links
 - **Auto-handles lazy loading** — scrolls to hydrate all messages before export
+- **Metadata Fixes**: More stable message grouping and metadata preservation in v0.2.3
 - **No servers, no tracking** — everything runs locally in your browser
 - **Dark & light PDF themes** (dark is default — the good one)
 
@@ -19,7 +21,7 @@ ChatScribe is a lightweight Chrome extension that turns any ChatGPT chat into a 
 
 1. Download or clone this repo:
    ```bash
-   git clone https://github.com/<your-username>/chatscribe.git
+   git clone https://github.com/kunalmttl/chatscribe.git
    ```
 2. Open `chrome://extensions` in Chrome / Brave / Edge.
 3. Enable **Developer mode** (top right).
@@ -85,8 +87,9 @@ Using the browser's own print engine means fonts render correctly, text stays se
 
 ## Roadmap
 
+- [x] Syntax highlighting for C++ in PDF code blocks (Zero-dependency)
+- [ ] Language detection for other common languages (Python, JS, etc.)
 - [ ] One-click PDF save without print dialog (via offscreen canvas pipeline)
-- [ ] Syntax highlighting in PDF code blocks (highlight.js)
 - [ ] Export multiple chats at once (sidebar → bulk)
 - [ ] Custom theme builder
 - [ ] Export to DOCX
