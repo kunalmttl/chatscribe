@@ -195,6 +195,14 @@
     color: var(--muted);
   }
 
+  /* Syntax Highlighting (Subdued Pastel) */
+  .token-kw   { color: #B4A0E5; font-weight: 600; }
+  .token-str  { color: #A6D189; }
+  .token-com  { color: #737994; font-style: italic; }
+  .token-num  { color: #EF9F76; }
+  .token-type { color: #81C8BE; }
+  .token-prep { color: #99D1DB; }
+
   /* Tables */
   table {
     width: 100%;
@@ -301,8 +309,8 @@
       <div class="brand">ChatScribe</div>
       <h1 class="doc-title">Test Conversation</h1>
       <div class="doc-meta">
-              <span class="meta-item">Exported 20 April 2026 at 03:13 pm</span>
-              <span class="meta-item">4 messages</span>
+              <span class="meta-item">Exported 20 April 2026 at 04:17 pm</span>
+              <span class="meta-item">5 messages</span>
             </div>
     </header>
 
@@ -313,6 +321,21 @@
           </div>
           <div class="msg-body">
             <p>Hello world</p>
+          </div>
+        </section>
+      
+
+        <section class="message msg-ai">
+          <div class="msg-header">
+            <span class="tag tag-ai">ChatGPT</span>
+          </div>
+          <div class="msg-body">
+            <pre data-lang="cpp"><code class="language-cpp"><span class="token-prep">#include</span> &lt;iostream&gt;
+
+<span class="token-kw">int</span> main() {
+  <span class="token-type">std::cout</span> &lt;&lt; <span class="token-str">"Hello, ChatScribe!"</span> &lt;&lt; <span class="token-type">std::endl</span>;
+  <span class="token-kw">return</span> <span class="token-num">0</span>;
+}</code></pre>
           </div>
         </section>
       
@@ -399,7 +422,7 @@
 
     <footer class="doc-footer">
       <span>Generated with ChatScribe</span>
-      <span>20 April 2026 at 03:13 pm</span>
+      <span>20 April 2026 at 04:17 pm</span>
     </footer>
   </main>
    <script>

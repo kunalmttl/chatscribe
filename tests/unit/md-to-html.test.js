@@ -16,14 +16,18 @@ test('mdToHtml conversion', async (t) => {
     assert.strictEqual(mdToHtml('`code`'), '<p><code>code</code></p>');
     assert.strictEqual(mdToHtml('~~strike~~'), '<p><del>strike</del></p>');
     assert.strictEqual(mdToHtml('[link](https://google.com)'), '<p><a href="https://google.com">link</a></p>');
-  });
-
-  await t.test('code blocks with info strings (including IDs)', () => {
+  });  await t.test('code blocks with info strings (including IDs)', () => {
     const md = '```js id="123"\nconsole.log(1);\n```';
     const html = mdToHtml(md);
     assert.ok(html.includes('<pre data-lang="js"><code class="language-js">console.log(1);</code></pre>'));
   });
 
+  await t.test('C++ syntax highlighting basics', () => {
+    const md = '```cpp\nint main() { return 0; }\n```';
+    const html = mdToHtml(md);
+    assert.ok(html.includes('<span class="token-kw">int</span>'));
+    assert.ok(html.includes('<span class="token-kw">return</span>'));
+  });
   await t.test('code blocks without language', () => {
     const md = '```\nplain text\n```';
     const html = mdToHtml(md);

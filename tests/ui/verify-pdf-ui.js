@@ -11,11 +11,11 @@ const mockData = {
   exportedAt: Date.now(),
   messages: [
     { role: 'user', markdown: 'Hello world' },
+    { role: 'assistant', markdown: '```cpp\n#include <iostream>\n\nint main() {\n  std::cout << "Hello, ChatScribe!" << std::endl;\n  return 0;\n}\n```' },
     { role: 'assistant', markdown: 'A very long message to test page breaking.\n\n' + 'Line of text.\n\n'.repeat(50) },
     { role: 'user', markdown: 'Show me a big table' },
     { role: 'assistant', markdown: '| ID | Data | Description |\n|---|---|---|\n' + '| 1 | Row | Long description that might wrap |\n'.repeat(60) }
-  ]
-};
+  ]};
 
 const html = buildPdfHtml(mockData);
 const outDir = path.join(__dirname, '../temp');
