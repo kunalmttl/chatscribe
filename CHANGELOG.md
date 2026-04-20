@@ -1,5 +1,19 @@
 # Changelog
 61: 
+## 0.2.3 — 2026-04-20
+
+### Fixed
+- **Major PDF Export Reliability Update.** Solved the infinite page-break loop 
+  (e.g., 200+ pages) by removing `page-break-inside: avoid` from large 
+  containers like tables and code blocks.
+- **Side Cropping in PDF.** Fixed content being cut off on the right edge by 
+  implementing a 15mm safety padding buffer in print mode. This ensures 
+  compatibility even when the user selects "Margins: None" in the browser 
+  print dialog.
+- **Flexbox Print Stability.** Replaced `display: flex` with more primitive 
+  print-safe layouts for headers, footers, and metadata to ensure better 
+  rendering in virtual PDF printers (like Adobe PDF).
+
 ## 0.2.2 — 2026-04-20
 
 ### Added

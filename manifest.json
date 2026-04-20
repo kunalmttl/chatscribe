@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ChatScribe — ChatGPT Exporter",
-  "version": "0.2.2",
-  "description": "Export ChatGPT conversations to beautifully formatted Markdown or PDF. Minimal. Dark. Copy-pasteable.",
+  "version": "0.2.3",
+  "description": "The ultimate privacy-focused ChatGPT exporter. Save conversations to perfectly formatted Markdown or high-fidelity PDFs with zero external dependencies. Clean, dark, and developer-friendly.",
   "permissions": ["activeTab", "downloads", "scripting", "storage"],
   "host_permissions": [
     "https://chatgpt.com/*",
