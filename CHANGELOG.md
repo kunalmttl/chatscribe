@@ -1,5 +1,32 @@
 # Changelog
-61: 
+
+## 0.3.1 — 2026-04-27
+
+### Fixed
+- **Gemini Lazy Loading.** Added auto-scrolling to load full conversation history before extraction, targeting `chat-window-content > div.chat-history-scroll-container` with fallback to `div#chat-history`.
+- **Missing Assistant Responses.** Fixed extraction of Gemini assistant messages by ensuring proper selection of `<model-response>` elements and content processing.
+- **Unwanted Prefixes.** Removed erroneous "You said" prefixes from user messages in Gemini exports.
+- **Line Break Preservation.** Fixed conversion of `<br>` tags to newlines in Gemini message content to preserve original formatting.
+
+## 0.3.0 — 2026-04-26
+
+### Added
+- **Gemini Support.** ChatScribe now exports Gemini conversations in addition to ChatGPT. Exports are available in both Markdown and PDF formats.
+- `content/gemini-api.js` — Gemini DOM extractor that queries `<user-query>` and `<model-response>` custom web components to build the conversation tree.
+- Platform detection throughout the extension — the popup shows "ChatGPT" or "Gemini" based on the active tab, and all exports include platform indicators.
+
+### Changed
+- **Extension name updated.** Now "ChatScribe — ChatGPT & Gemini Exporter" to reflect dual-platform support.
+- `content/extractor.js` — Added Gemini extraction functions and platform-based routing in the message handler.
+- `popup/popup.js` — Updated to detect Gemini tabs, show appropriate platform labels, and handle Gemini exports.
+- `manifest.json` — Added `https://gemini.google.com/*` to host permissions and content scripts.
+- `tests/unit/gemini-extractor.test.js` — New test suite for Gemini extraction logic.
+
+### Technical Notes
+- Gemini uses DOM extraction (not API) due to its obfuscated `batchexecute` RPC endpoint. The extension iterates over custom web components (`#chat-history`, `<user-query>`, `<model-response>`) rather than relying on the brittle internal API.
+- Images are exported as markdown image links (`![alt](src)`) rather than embedded base64 to keep file sizes manageable.
+- Code blocks are extracted from `.code-block` or `code-immersive-panel` elements with language from `.code-language`.
+
 ## 0.2.4 — 2026-04-20
 
 ### Added
