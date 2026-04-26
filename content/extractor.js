@@ -1,42 +1,114 @@
 /**
  * ChatScribe — Content Script
- * Extracts the current ChatGPT conversation into structured JSON.
+ * Extracts the current conversation into structured JSON.
  * Listens for messages from popup and responds with conversation data.
+ * Supports both ChatGPT and Gemini platforms.
  */
 
 (function () {
   "use strict";
 
+  // --- Platform Detection ---------------------------------------------------
+
+  function getPlatform() {
+    const hostname = location.hostname;
+    if (hostname === 'chatgpt.com' || hostname === 'chat.openai.com') {
+      return 'chatgpt';
+    }
+    if (hostname === 'gemini.google.com') {
+      return 'gemini';
+    }
+    return 'unknown';
+  }
+
   // --- Utilities ----------------------------------------------------------
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  /** Scroll the chat container up to force lazy-loaded messages to hydrate. */
-  async function autoScrollToTop() {
-    // Find the scrollable container — ChatGPT uses a main scroll area
-    const scroller =
-      document.querySelector("main div.overflow-y-auto") ||
-      document.querySelector("[class*='overflow-y-auto']") ||
-      document.scrollingElement;
+/** Scroll the chat container up to force lazy-loaded messages to hydrate. */
+async function autoScrollToTop() {
+  // Find the scrollable container — ChatGPT uses a main scroll area
+  const scroller =
+    document.querySelector("main div.overflow-y-auto") ||
+    document.querySelector("[class*='overflow-y-auto']") ||
+    document.scrollingElement;
 
-    if (!scroller) return;
+  if (!scroller) return;
 
-    let lastTop = -1;
-    let stable = 0;
-    for (let i = 0; i < 80; i++) {
-      scroller.scrollTop = 0;
-      await sleep(120);
-      if (scroller.scrollTop === lastTop) {
-        stable++;
-        if (stable > 3) break;
-      } else {
-        stable = 0;
-      }
-      lastTop = scroller.scrollTop;
+  let lastTop = -1;
+  let stable = 0;
+  for (let i = 0; i < 80; i++) {
+    scroller.scrollTop = 0;
+    await sleep(120);
+    if (scroller.scrollTop === lastTop) {
+      stable++;
+      if (stable > 3) break;
+    } else {
+      stable = 0;
     }
-    // Scroll back to bottom so the user isn't disoriented
-    scroller.scrollTop = scroller.scrollHeight;
+    lastTop = scroller.scrollTop;
   }
+  // Scroll back to bottom so the user isn't disoriented
+  scroller.scrollTop = scroller.scrollHeight;
+}
+
+/** Scroll the Gemini chat container up to force lazy-loaded messages to hydrate. */
+async function autoScrollToTopGemini() {
+  // Find the scrollable container — Gemini uses chat-window-content > div.chat-history-scroll-container
+  const scroller =
+    document.querySelector('chat-window-content > div.chat-history-scroll-container') ||
+    document.querySelector('div#chat-history');
+
+  if (!scroller) {
+    console.log("[ChatScribe Gemini] Could not find scroll container");
+    return;
+  }
+
+  console.log(`[ChatScribe Gemini] Found scroll container: ${scroller.outerHTML.substring(0, 100)}`);
+  
+  let lastTop = -1;
+  let stable = 0;
+  let previousUserCount = 0;
+  let previousModelCount = 0;
+  
+  for (let i = 0; i < 120; i++) { // Increased iterations
+    scroller.scrollTop = 0;
+    await sleep(150); // Slightly longer delay
+    
+    // Check if we've loaded more messages
+    const currentUserCount = document.querySelectorAll('user-query').length;
+    const currentModelCount = document.querySelectorAll('model-response').length;
+    
+    if (currentUserCount > previousUserCount || currentModelCount > previousModelCount) {
+      console.log(`[ChatScribe Gemini] Loaded more messages: ${currentUserCount} user, ${currentModelCount} model (was ${previousUserCount} user, ${previousModelCount} model)`);
+      previousUserCount = currentUserCount;
+      previousModelCount = currentModelCount;
+      stable = 0; // Reset stability counter since we got new content
+    } else if (scroller.scrollTop === lastTop) {
+      stable++;
+      if (stable > 5) { // Need more stability before stopping
+        console.log(`[ChatScribe Gemini] Scroll position stable for ${stable} cycles, stopping`);
+        break;
+      }
+    } else {
+      stable = 0;
+    }
+    lastTop = scroller.scrollTop;
+    
+    // Progress indicator every 10 iterations
+    if (i % 10 === 0) {
+      console.log(`[ChatScribe Gemini] Scroll attempt ${i}/120`);
+    }
+  }
+  
+  // Final count
+  const finalUserCount = document.querySelectorAll('user-query').length;
+  const finalModelCount = document.querySelectorAll('model-response').length;
+  console.log(`[ChatScribe Gemini] Final message count: ${finalUserCount} user, ${finalModelCount} model`);
+  
+  // Scroll back to bottom so the user isn't disoriented
+  scroller.scrollTop = scroller.scrollHeight;
+}
 
   /** Get the chat title from the page. */
   function getChatTitle() {
@@ -395,23 +467,151 @@
     return messages;
   }
 
+  // --- Gemini Extraction ---------------------------------------------------
+
+/**
+ * Extract messages from Gemini's DOM structure.
+ * Gemini uses custom web components: <user-query> and <model-response>
+ */
+function extractGeminiMessages() {
+  // Use the more stable selector first, with fallback
+  const chatHistory =
+    document.querySelector('chat-window-content > div.chat-history-scroll-container') ||
+    document.querySelector('div#chat-history');
+    
+  if (!chatHistory) {
+    throw new Error("Could not find chat history container");
+  }
+
+  console.log(`[ChatScribe Gemini] Using chatHistory selector: ${chatHistory ? chatHistory.outerHTML.substring(0, 100) : 'null'}`);
+
+  const messages = [];
+  const userQueries = chatHistory.querySelectorAll("user-query");
+  const modelResponses = chatHistory.querySelectorAll("model-response");
+
+  console.log(`[ChatScribe Gemini] Found ${userQueries.length} user-query elements and ${modelResponses.length} model-response elements`);
+
+  // Interleave user and assistant messages
+  const totalPairs = Math.max(userQueries.length, modelResponses.length);
+
+  for (let i = 0; i < totalPairs; i++) {
+    // User message
+    if (i < userQueries.length) {
+      let userContent = extractTextContent(userQueries[i]);
+      // Remove unwanted "You said" prefix if present
+      if (userContent.startsWith("You said")) {
+        userContent = userContent.substring(8).trim();
+      }
+      if (userContent) {
+        messages.push({ role: "user", markdown: userContent });
+      }
+    }
+
+    // Assistant message
+    if (i < modelResponses.length) {
+      let assistantContent = extractGeminiResponse(modelResponses[i]);
+      // Remove any unwanted prefixes if present
+      if (assistantContent.startsWith("You said")) {
+        assistantContent = assistantContent.substring(8).trim();
+      }
+      if (assistantContent) {
+        messages.push({ role: "assistant", markdown: assistantContent });
+      }
+    }
+  }
+
+  console.log(`[ChatScribe Gemini] Extracted ${messages.length} total messages`);
+  return messages;
+}
+
+/**
+ * Extract clean text from an element, preserving line breaks from <br> tags
+ */
+function extractTextContent(element) {
+  if (!element) return "";
+  const clone = element.cloneNode(true);
+  
+  // Convert <br> tags to newlines before getting textContent
+  clone.querySelectorAll("br").forEach(br => {
+    br.replaceWith(document.createTextNode("\n"));
+  });
+  
+  // Remove script, style, and .code-language elements
+  clone.querySelectorAll("script, style, .code-language").forEach((el) => el.remove());
+  
+  return clone.textContent
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/^\s+|\s+$/g, "")
+    .trim();
+}
+
+  /**
+   * Extract markdown content from a Gemini model response element
+   */
+  function extractGeminiResponse(element) {
+    const contentContainer = element.querySelector("message-content.model-response-text");
+    if (!contentContainer) return "";
+
+    const markdown = htmlToMarkdown(contentContainer);
+    return markdown.trim();
+  }
+
+  /**
+   * Get Gemini conversation title
+   */
+  function getGeminiTitle() {
+    const titleEl = document.querySelector("h1, [role='heading']");
+    if (titleEl) return titleEl.textContent.trim();
+    return "Gemini Conversation";
+  }
+
   // --- Message handler ----------------------------------------------------
 
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg?.type === "CHATSCRIBE_PING") {
-      sendResponse({ ok: true });
+      sendResponse({ ok: true, platform: getPlatform() });
       return true;
     }
 
     if (msg?.type === "CHATSCRIBE_EXTRACT") {
       (async () => {
-        // Strategy 1: ChatGPT backend API — cleanest, preserves code newlines
-        // perfectly because we're reading the original markdown, not the DOM.
+        const platform = getPlatform();
+
+        // Gemini: Use DOM extraction (no clean API available)
+        if (platform === "gemini") {
+          try {
+            console.log("[ChatScribe] Starting Gemini extraction with lazy loading fix");
+            // Scroll to load all messages before extraction
+            await autoScrollToTopGemini();
+            await sleep(300); // Additional wait for content to settle
+            
+            const messages = extractGeminiMessages();
+            const title = getGeminiTitle();
+            console.log(`[ChatScribe] Gemini extraction complete: ${messages.length} messages extracted`);
+            sendResponse({
+              ok: true,
+              source: "gemini-dom",
+              platform: "gemini",
+              data: {
+                title,
+                url: location.href,
+                exportedAt: new Date().toISOString(),
+                messages,
+              },
+            });
+          } catch (err) {
+            console.error("[ChatScribe] Gemini extraction failed:", err);
+            sendResponse({ ok: false, error: String(err?.message || err), platform: "gemini" });
+          }
+          return;
+        }
+
+        // ChatGPT: Try API first, then DOM fallback
         try {
           if (window.__chatscribeApi?.available?.()) {
             const data = await window.__chatscribeApi.extract();
             if (data?.messages?.length) {
-              sendResponse({ ok: true, data, source: "api" });
+              sendResponse({ ok: true, data, source: "api", platform: "chatgpt" });
               return;
             }
           }
@@ -419,7 +619,7 @@
           console.warn("[ChatScribe] API extraction failed, falling back to DOM:", apiErr);
         }
 
-        // Strategy 2: DOM extraction fallback
+        // DOM extraction fallback for ChatGPT
         try {
           await autoScrollToTop();
           await sleep(300);
@@ -428,6 +628,7 @@
           sendResponse({
             ok: true,
             source: "dom",
+            platform: "chatgpt",
             data: {
               title,
               url: location.href,
@@ -436,7 +637,7 @@
             },
           });
         } catch (err) {
-          sendResponse({ ok: false, error: String(err?.message || err) });
+          sendResponse({ ok: false, error: String(err?.message || err), platform: "chatgpt" });
         }
       })();
       return true; // keep channel open for async response
@@ -444,5 +645,6 @@
   });
 
   // Signal readiness
-  console.log("[ChatScribe] Content script loaded.");
+  const platform = getPlatform();
+  console.log(`[ChatScribe] Content script loaded (${platform} mode).`);
 })();
